@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Excel export library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #e0f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #0077b6;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    #searchInput {
+      width: 100%;
+      max-width: 400px;
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      overflow-x: auto;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid #90caf9;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #0077b6;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    button {
+      margin: 20px auto 0;
+      display: block;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #0077b6;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #005f8f;
+    }
+
+    @media (max-width: 768px) {
+      th, td {
+        font-size: 12px;
+        padding: 8px;
+      }
+
+      #searchInput {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📊 Admin Dashboard</h1>
+
+  <input type="text" id="searchInput" placeholder="Search..." onkeyup="filterTable()" />
+
+  <table id="contactTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Subject</th>
+        <th>Message</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button onclick="downloadExcel()">Download as Excel</button>
+
+  <script>
+    const tableBody = document.querySelector("#contactTable tbody");
+    const storedData = JSON.parse(localStorage.getItem("contactMessages")) || [];
+
+    function loadTable(data) {
+      tableBody.innerHTML = "";
+      data.forEach(entry => {
+        const row = tableBody.insertRow();
+        Object.values(entry).forEach(val => {
+          const cell = row.insertCell();
+          cell.textContent = val;
+        });
+      });
+    }
+
+    function filterTable() {
+      const search = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = storedData.filter(entry =>
+        Object.values(entry).some(val => val.toLowerCase().includes(search))
+      );
+      loadTable(filtered);
+    }
+
+    function downloadExcel() {
+      if (storedData.length === 0) {
+        alert("No data to export!");
+        return;
+      }
+
+      const worksheet = XLSX.utils.json_to_sheet(storedData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "ContactData");
+      XLSX.writeFile(workbook, "ContactData.xlsx");
+    }
+
+    // Initial render
+    loadTable(storedData);
+  </script>
+<hr style="margin-top: 40px;">
+
+<div style="max-width: 400px; margin: 40px auto; text-align: center;">
+  <h3>🔑 Change Admin Password</h3>
+  <input type="password" id="oldPassword" placeholder="Current Password" style="width: 100%; padding: 10px; margin-bottom: 10px;" />
+  <input type="password" id="newPassword" placeholder="New Password" style="width: 100%; padding: 10px; margin-bottom: 10px;" />
+  <button onclick="changePassword()">Change Password</button>
+</div>
+
+<script>
+  function changePassword() {
+    const oldPass = document.getElementById("oldPassword").value;
+    const newPass = document.getElementById("newPassword").value;
+
+    const storedPassword = localStorage.getItem("adminPassword") || "nikhil2025";
+
+    if (oldPass !== storedPassword) {
+      alert("Current password is incorrect!");
+      return;
+    }
+
+    if (!newPass || newPass.length < 4) {
+      alert("New password must be at least 4 characters long.");
+      return;
+    }
+
+    localStorage.setItem("adminPassword", newPass);
+    alert("Password changed successfully!");
+    
+    // Clear inputs
+    document.getElementById("oldPassword").value = '';
+    document.getElementById("newPassword").value = '';
+  }
+</script>
+
+</body>
+</html>
